@@ -1,5 +1,6 @@
 use clap::Parser;
 use commands::create_signup;
+use eyre::Context as EyreContext;
 use serenity::{
     Client,
     all::{
@@ -10,6 +11,7 @@ use serenity::{
 };
 
 pub mod commands;
+pub mod db;
 
 /// Commandline arguments.
 #[derive(Parser, Debug)]
@@ -19,18 +21,25 @@ struct Cli {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> eyre::Result<()> {
     dotenvy::dotenv().ok();
     let cli = Cli::parse();
+
+    color_eyre::install()?;
+
+    db::queries::setup();
 
     let mut client = Client::builder(cli.discord_token, GatewayIntents::empty())
         .event_handler(DiscordHandler)
         .await
-        .expect("Error creating discord client");
+        .wrap_err("Failed to setup discord client")?;
 
-    if let Err(err) = client.start().await {
-        eprintln!("Failed to stat discord client {err:?}");
-    }
+    client
+        .start()
+        .await
+        .wrap_err("Failed to start discord client")?;
+
+    Ok(())
 }
 
 struct DiscordHandler;
@@ -62,6 +71,7 @@ impl EventHandler for DiscordHandler {
                     }
                 }
             }
+            Interaction::Component(component) => todo!(), //component.data.custom_id,
             Interaction::Modal(_) => {} // This is handled by the creator of the modal.
             i => eprintln!("Unsupported command {i:?}"),
         }

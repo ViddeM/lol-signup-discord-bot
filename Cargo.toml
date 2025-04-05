@@ -9,3 +9,8 @@ clap = { version = "4.5.35", features = ["derive", "env"] }
 dotenvy = "0.15.7"
 serenity = { version = "0.12.4", features = ["collector"] }
 tokio = { version = "1.44.1", features = ["full"] }
+rusqlite = { version = "0.34.0", features = ["bundled", "chrono", "serde_json", "uuid"] }
+uuid = { version = "1.16.0", features = ["v4"] }
+eyre = "0.6.12"
+color-eyre = "0.6.3"
+
